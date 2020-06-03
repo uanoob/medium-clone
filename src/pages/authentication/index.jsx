@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import useFetch from '../../hooks/useFetch';
+import useLocalStorage from '../../hooks/useLocalStorage';
 
 const Authentication = ({ match }) => {
   const isLogin = match.path === '/login';
@@ -13,9 +14,10 @@ const Authentication = ({ match }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [{ isLoading }, doFetch] = useFetch(apiUrl);
+  const [{ isLoading, response }, doFetch] = useFetch(apiUrl);
+  const [token, setToken] = useLocalStorage('token');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = event => {
     event.preventDefault();
     const user = isLogin ? { email, password } : { email, password, username };
     doFetch({
@@ -25,6 +27,17 @@ const Authentication = ({ match }) => {
       },
     });
   };
+
+  useEffect(() => {
+    if (!response) {
+      return;
+    }
+    setToken(response.user.token);
+  }, [response, setToken]);
+
+  if (token) {
+    return <Redirect to="/" />;
+  }
 
   return (
     <div className="auth-page">
@@ -44,7 +57,7 @@ const Authentication = ({ match }) => {
                       className="form-control form-control-lg"
                       placeholder="Username"
                       value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      onChange={e => setUsername(e.target.value)}
                     />
                   </fieldset>
                 )}
@@ -54,7 +67,7 @@ const Authentication = ({ match }) => {
                     className="form-control form-control-lg"
                     placeholder="Email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                   />
                 </fieldset>
                 <fieldset className="form-group">
@@ -63,7 +76,7 @@ const Authentication = ({ match }) => {
                     className="form-control form-control-lg"
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                   />
                 </fieldset>
                 <button

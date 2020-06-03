@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const useFetch = (url) => {
+export default url => {
   const baseUrl = 'https://conduit.productionready.io/api';
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState(null);
@@ -18,17 +18,15 @@ const useFetch = (url) => {
       return;
     }
     axios(baseUrl + url, options)
-      .then((res) => {
+      .then(res => {
         setIsLoading(false);
         setResponse(res.data);
       })
-      .catch((err) => {
+      .catch(err => {
         setIsLoading(false);
         setError(err.response.data);
       });
-  }, [isLoading]);
+  }, [isLoading, url, options]);
 
   return [{ isLoading, response, error }, doFetch];
 };
-
-export default useFetch;
